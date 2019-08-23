@@ -9,6 +9,8 @@ import VueRouter from 'vue-router'
 // 引入组件
 import login from '@/views/login.vue'
 import home from '@/views/home.vue'
+import welcome from '@/views/welcome.vue'
+import users from '@/views/users/users.vue'
 
 // 使用use,让vue使用vue-router进行对路由的管理
 Vue.use(VueRouter)
@@ -22,7 +24,9 @@ export default new VueRouter({
       name: 'default',
       path: '/',
       // 重定向
-      redirect: { name: 'login' }
+      redirect: {
+        name: 'login'
+      }
     },
     {
       name: 'login',
@@ -32,7 +36,20 @@ export default new VueRouter({
     {
       name: 'home',
       path: '/home',
-      component: home
+      component: home,
+      redirect: { name: 'welcome' },
+      children: [
+        {
+          name: 'welcome',
+          path: 'welcome',
+          component: welcome
+        },
+        {
+          name: 'users',
+          path: 'users',
+          component: users
+        }
+      ]
     }
   ]
 })
