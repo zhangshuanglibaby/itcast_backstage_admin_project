@@ -27,26 +27,26 @@
       <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
       <el-table-column prop="mobile" label="手机"></el-table-column>
       <!-- 添加用户状态 -->
-        <el-table-column label="用户状态">
-           <template slot-scope="scope">
-          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="gray" @change="userStatus(scope.row.id,scope.row.mg_state)"></el-switch>
+      <el-table-column label="用户状态">
+        <template slot-scope="scope">
+          <el-switch
+            v-model="scope.row.mg_state"
+            active-color="#13ce66"
+            inactive-color="gray"
+            @change="userStatus(scope.row.id,scope.row.mg_state)"
+          ></el-switch>
         </template>
-        </el-table-column>
+      </el-table-column>
       <!-- 添加自定义列模板操作 -->
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button size="mini" type="primary" plain @click="showEditRoleDialog(scope.row)">
             <i class="el-icon-edit"></i>
           </el-button>
-          <el-button size="mini" type="danger" plain @click="handleDelete(scope.$index, scope.row)">
+          <el-button size="mini" type="danger" plain @click="delUser(scope.row.id)">
             <i class="el-icon-delete"></i>
           </el-button>
-          <el-button
-            size="mini"
-            type="warning"
-            plain
-            @click="showGrantRoleDialog(scope.row)"
-          >
+          <el-button size="mini" type="warning" plain @click="showGrantRoleDialog(scope.row)">
             <i class="el-icon-check"></i>
           </el-button>
         </template>
@@ -64,7 +64,7 @@
     ></el-pagination>
     <!-- 添加添加用户的对话框 -->
     <el-dialog title="添加用户" :visible.sync="addRoleDialogFormVisible">
-      <el-form :model="addRoleForm" :label-width="'80px'" :rules="rules" ref='addRoleForm'>
+      <el-form :model="addRoleForm" :label-width="'80px'" :rules="rules" ref="addRoleForm">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="addRoleForm.username" auto-complete="off"></el-input>
         </el-form-item>
@@ -126,8 +126,17 @@
   </div>
 </template>
 <script>
-import { getAllUsers, addRole, editRole, grantRoleById, changeUserStatus } from '@/api/users.js'
+import {
+  getAllUsers,
+  addRole,
+  editRole,
+  grantRoleById,
+  changeUserStatus,
+  delUserById
+} from '@/api/users.js'
 import { getAllRoles } from '@/api/roles.js'
+import { async } from 'q'
+import { match } from 'minimatch'
 export default {
   data () {
     return {
@@ -188,9 +197,6 @@ export default {
     }
   },
   methods: {
-    handleDelete (index, row) {
-      console.log(index, row)
-    },
     handleSizeChange (val) {
       // console.log(`每页 ${val} 条`)
       this.userObj.pagesize = val
@@ -260,7 +266,10 @@ export default {
     // 分配角色提交
     async grantRole () {
       this.grantRoleDialogFormVisible = false
-      let res = await grantRoleById(this.grantRoleForm.id, this.grantRoleForm.rid)
+      let res = await grantRoleById(
+        this.grantRoleForm.id,
+        this.grantRoleForm.rid
+      )
       // console.log(res)
       if (res.data.meta.status === 200) {
         this.$message.success(res.data.meta.msg)
@@ -280,6 +289,33 @@ export default {
       } else {
         this.$message.error(res.data.meta.msg)
       }
+    },
+    // 删除用户
+    delUser (id) {
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async () => {
+          let res = await delUserById(id)
+          console.log(res)
+          // this.$message.success('删除成功!')
+          if (res.data.meta.status === 200) {
+            this.$message.success(res.data.meta.msg)
+            // 当当前页面删除完毕时需要跳到上一页
+            // if (this.usersList.length === 1) {
+            //   this.userObj.pagenum--
+            // }
+            if (Math.ceil((this.total - 1) / this.userObj.pagesize) < this.userObj.pagenum) {
+              this.userObj.pagenum--
+            }
+            this.init()
+          }
+        })
+        .catch(() => {
+          this.$message.info('已取消删除')
+        })
     }
   },
   // 组件一加载就要获取数据使用钩子函数
