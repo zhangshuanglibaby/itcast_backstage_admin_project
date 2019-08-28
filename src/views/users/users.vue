@@ -14,11 +14,11 @@
         v-model="userObj.query"
         class="input-with-select"
         style="width:300px;margin-right:20px"
-        @input.native='init'
+        @input.native="init"
       >
         <el-button slot="append" icon="el-icon-search" @click="init"></el-button>
       </el-input>
-      <el-button type="success" plain>添加用户</el-button>
+      <el-button type="success" plain @click="addRoleDialogFormVisible=true">添加用户</el-button>
     </div>
     <!-- 表格 -->
     <el-table :data="usersList" style="width: 100%">
@@ -62,10 +62,31 @@
       layout="total, sizes, prev, pager, next, jumper"
       :total="total"
     ></el-pagination>
+    <!-- 添加添加用户的对话框 -->
+    <el-dialog title="添加用户" :visible.sync="addRoleDialogFormVisible">
+      <el-form :model="addRoleForm" :label-width="'80px'" :rules="rules">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="addRoleForm.username" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="password" >
+          <el-input v-model="addRoleForm.password" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email" >
+          <el-input v-model="addRoleForm.email" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop="mobile">
+          <el-input v-model="addRoleForm.mobile" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addRoleDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addRole">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getAllUsers } from '@/api/users.js'
+import { getAllUsers, addRole } from '@/api/users.js'
 export default {
   data () {
     return {
@@ -76,6 +97,19 @@ export default {
         query: '',
         pagenum: 1,
         pagesize: 3
+      },
+      addRoleDialogFormVisible: false,
+      addRoleForm: {
+        username: '',
+        password: '',
+        email: '',
+        mobile: ''
+      },
+      rules: {
+        username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        password: [{ required: true, message: '请输入密码', trigger: 'blur' }, { min: 5, message: '长度不能小于5个字符', trigger: 'blur' }],
+        email: [{ required: true, pattern: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/, message: '请正确输入邮箱', trigger: 'blur' }],
+        mobile: [{ required: true, pattern: /0?(13|14|15|18|17)[0-9]{9}/, message: '请正确输入手机号', trigger: 'blur' }]
       }
     }
   },
@@ -87,25 +121,38 @@ export default {
       console.log(index, row)
     },
     handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
+      // console.log(`每页 ${val} 条`)
       this.userObj.pagesize = val
       this.init()
     },
     handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
+      // console.log(`当前页: ${val}`)
       this.userObj.pagenum = val
       this.init()
     },
+    // 获取所有用户的数据
     init () {
       getAllUsers(this.userObj)
         .then(res => {
-          console.log(res)
+          // console.log(res)
           this.usersList = res.data.data.users
           this.total = res.data.data.total
         })
         .catch(err => {
           console.log(err)
         })
+    },
+    // 添加用户
+    async addRole () {
+      this.addRoleDialogFormVisible = false
+      let res = await addRole(this.addRoleForm)
+      if (res.data.meta.status === 201) {
+        this.$message.success(res.data.meta.msg)
+        // 刷新
+        this.init()
+      } else {
+        this.$message.error(res.data.meta.msg)
+      }
     }
   },
   // 组件一加载就要获取数据使用钩子函数

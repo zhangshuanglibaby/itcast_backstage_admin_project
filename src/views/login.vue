@@ -25,8 +25,8 @@ export default {
     return {
       // 数据对象需要与数据库的名称一样,后续传参需要使用
       loginForm: {
-        username: '',
-        password: ''
+        username: 'admin',
+        password: '123456'
       },
       rules: {
         username: [
