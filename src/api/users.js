@@ -16,3 +16,12 @@ export const addRole = (data) => {
     data
   })
 }
+
+// 编辑用户
+export const editRole = (data) => {
+  return axios({
+    url: `users/${data.id}`,
+    method: 'put',
+    data
+  })
+}
