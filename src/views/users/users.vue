@@ -45,7 +45,7 @@
             size="mini"
             type="warning"
             plain
-            @click="handleDelete(scope.$index, scope.row)"
+            @click="showGrantRoleDialog(scope.row)"
           >
             <i class="el-icon-check"></i>
           </el-button>
@@ -64,7 +64,7 @@
     ></el-pagination>
     <!-- 添加添加用户的对话框 -->
     <el-dialog title="添加用户" :visible.sync="addRoleDialogFormVisible">
-      <el-form :model="addRoleForm" :label-width="'80px'" :rules="rules">
+      <el-form :model="addRoleForm" :label-width="'80px'" :rules="rules" ref='addRoleForm'>
         <el-form-item label="用户名" prop="username">
           <el-input v-model="addRoleForm.username" auto-complete="off"></el-input>
         </el-form-item>
@@ -86,13 +86,13 @@
     <!-- 添加编辑用户的对话框 -->
     <el-dialog title="编辑用户" :visible.sync="EditRoleDialogFormVisible">
       <el-form :model="editRoleForm" :label-width="'80px'" :rules="rules">
-        <el-form-item label="用户名" >
-          <el-input v-model="editRoleForm.username" auto-complete="off" style="width:80px" disabled=""></el-input>
+        <el-form-item label="用户名">
+          <el-input v-model="editRoleForm.username" auto-complete="off" style="width:80px" disabled></el-input>
         </el-form-item>
-         <el-form-item label="邮箱" prop="email" >
+        <el-form-item label="邮箱" prop="email">
           <el-input v-model="editRoleForm.email" auto-complete="off"></el-input>
         </el-form-item>
-         <el-form-item label="手机" prop="mobile">
+        <el-form-item label="手机" prop="mobile">
           <el-input v-model="editRoleForm.mobile" auto-complete="off"></el-input>
         </el-form-item>
       </el-form>
@@ -101,10 +101,33 @@
         <el-button type="primary" @click="editRole">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 添加分配角色的对话框 -->
+    <el-dialog title="分配角色" :visible.sync="grantRoleDialogFormVisible">
+      <el-form :model="grantRoleForm" :label-width="'80px'">
+        <el-form-item label="用户名:">
+          <span>{{grantRoleForm.username}}</span>
+        </el-form-item>
+        <el-form-item label="角色:">
+          <el-select v-model="grantRoleForm.rid" clearable placeholder="请选择">
+            <el-option
+              v-for="item in roleList"
+              :key="item.value"
+              :label="item.roleName"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="grantRoleDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="grantRole">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getAllUsers, addRole, editRole } from '@/api/users.js'
+import { getAllUsers, addRole, editRole, grantRoleById } from '@/api/users.js'
+import { getAllRoles } from '@/api/roles.js'
 export default {
   data () {
     return {
@@ -154,7 +177,14 @@ export default {
         username: '',
         email: '',
         mobile: ''
-      }
+      },
+      grantRoleDialogFormVisible: false,
+      grantRoleForm: {
+        username: '',
+        id: '',
+        rid: ''
+      },
+      roleList: []
     }
   },
   methods: {
@@ -191,6 +221,8 @@ export default {
         this.$message.success(res.data.meta.msg)
         // 刷新
         this.init()
+        // 需要清空表单
+        this.$refs.addRoleForm.resetFields()
       } else {
         this.$message.error(res.data.meta.msg)
       }
@@ -216,11 +248,37 @@ export default {
       } else {
         this.$message.error(res.data.meta.msg)
       }
+    },
+    // 分配角色数据默认展示
+    showGrantRoleDialog (row) {
+      this.grantRoleDialogFormVisible = true
+      // console.log(row)
+      this.grantRoleForm.username = row.username
+      this.grantRoleForm.rid = row.rid
+      this.grantRoleForm.id = row.id
+    },
+    // 分配角色提交
+    async grantRole () {
+      this.grantRoleDialogFormVisible = false
+      let res = await grantRoleById(this.grantRoleForm.id, this.grantRoleForm.rid)
+      // console.log(res)
+      if (res.data.meta.status === 200) {
+        this.$message.success(res.data.meta.msg)
+        this.init()
+      } else {
+        this.$message.error(res.data.meta.msg)
+      }
     }
   },
   // 组件一加载就要获取数据使用钩子函数
-  mounted () {
+  async mounted () {
     this.init()
+    // 获取所有角色列表数据
+    let res = await getAllRoles()
+    // console.log(res)
+    if (res.data.meta.status === 200) {
+      this.roleList = res.data.data
+    }
   }
 }
 </script>
