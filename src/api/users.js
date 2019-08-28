@@ -34,3 +34,11 @@ export const grantRoleById = (id, rid) => {
     data: { rid }
   })
 }
+
+// 修改用户状态
+export const changeUserStatus = (uId, type) => {
+  return axios({
+    url: `users/${uId}/state/${type}`,
+    method: 'put'
+  })
+}

@@ -27,11 +27,11 @@
       <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
       <el-table-column prop="mobile" label="手机"></el-table-column>
       <!-- 添加用户状态 -->
-      <template>
-        <el-table-column prop="mg_state" label="用户状态">
-          <el-switch v-model="status" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+        <el-table-column label="用户状态">
+           <template slot-scope="scope">
+          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="gray" @change="userStatus(scope.row.id,scope.row.mg_state)"></el-switch>
+        </template>
         </el-table-column>
-      </template>
       <!-- 添加自定义列模板操作 -->
       <el-table-column label="操作">
         <template slot-scope="scope">
@@ -126,13 +126,13 @@
   </div>
 </template>
 <script>
-import { getAllUsers, addRole, editRole, grantRoleById } from '@/api/users.js'
+import { getAllUsers, addRole, editRole, grantRoleById, changeUserStatus } from '@/api/users.js'
 import { getAllRoles } from '@/api/roles.js'
 export default {
   data () {
     return {
       total: 0,
-      status: true,
+      status: '',
       usersList: [],
       userObj: {
         query: '',
@@ -264,6 +264,18 @@ export default {
       // console.log(res)
       if (res.data.meta.status === 200) {
         this.$message.success(res.data.meta.msg)
+        this.init()
+      } else {
+        this.$message.error(res.data.meta.msg)
+      }
+    },
+    // 修改用户状态
+    async userStatus (id, type) {
+      let res = await changeUserStatus(id, type)
+      // console.log(res)
+      if (res.data.meta.status === 200) {
+        this.$message.success(res.data.meta.msg)
+        // 刷新
         this.init()
       } else {
         this.$message.error(res.data.meta.msg)
