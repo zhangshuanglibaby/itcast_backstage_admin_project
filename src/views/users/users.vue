@@ -1,7 +1,7 @@
 <template>
   <div class="users">
     <!-- 面包屑导航-->
-    <el-breadcrumb separator-class="el-icon-arrow-right">
+    <el-breadcrumb separator-class="el-icon-arrow-right" style='background:#d0dce6'>
       <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>活动管理</el-breadcrumb-item>
       <el-breadcrumb-item>活动列表</el-breadcrumb-item>
@@ -32,7 +32,7 @@
           <el-switch
             v-model="scope.row.mg_state"
             active-color="#13ce66"
-            inactive-color="gray"
+            inactive-color="#d7dce5"
             @change="userStatus(scope.row.id,scope.row.mg_state)"
           ></el-switch>
         </template>
@@ -61,6 +61,7 @@
       :page-size="userObj.pagesize"
       layout="total, sizes, prev, pager, next, jumper"
       :total="total"
+      style="background:#d0dce6"
     ></el-pagination>
     <!-- 添加添加用户的对话框 -->
     <el-dialog title="添加用户" :visible.sync="addRoleDialogFormVisible">

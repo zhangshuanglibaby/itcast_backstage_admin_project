@@ -53,7 +53,7 @@
       <el-container>
         <el-header>
           <i class="myicon myicon-menu toggle-btn"></i>
-          <p style="font-size :36px;color:white">后台管理应用</p>
+          <p style="font-size :28px;color:white">电商后台管理系统</p>
           <a href="javascript" style="color:orange;text-decoration: underline">退出</a>
         </el-header>
         <el-main>
@@ -70,6 +70,7 @@ export default {}
 <style lang="less" scoped>
   .home {
   height: 100%;
+  background-color: #e7eef3;
   .el-menu-admin:not(.el-menu--collapse) {
     width: 200px;
     min-height: 400px;

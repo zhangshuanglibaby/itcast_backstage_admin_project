@@ -1,9 +1,9 @@
 <template>
   <div class="rightsList">
     <!-- 面包屑 -->
-    <el-breadcrumb separator="/" style="line-height:40px">
-      <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>权限管理</el-breadcrumb-item>
+    <el-breadcrumb separator="/" style="line-height:40px;background:#d0dce6">
+      <el-breadcrumb-item :to="{ name: 'welcome' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{name:'rightsList'}">权限管理</el-breadcrumb-item>
       <el-breadcrumb-item>权限列表</el-breadcrumb-item>
     </el-breadcrumb>
     <el-table :data="rightsList" border style="width: 100%">
