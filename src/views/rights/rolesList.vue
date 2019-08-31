@@ -16,17 +16,32 @@
       <el-table-column type="expand">
         <template slot-scope="props">
           <el-form label-position="left" inline class="demo-table-expand">
-            <el-row v-for="first in props.row.children" :key="first.id" style="margin-bottom:8px;border-bottom:1px solid #eee">
+            <el-row
+              v-for="first in props.row.children"
+              :key="first.id"
+              style="margin-bottom:8px;border-bottom:1px solid #eee"
+            >
               <el-col :span="4">
-                <el-tag closable @close='delRights(props.row,first.id),cnt=0'>{{first.authName}}</el-tag>
+                <el-tag closable @close="delRights(props.row,first.id),cnt=0">{{first.authName}}</el-tag>
               </el-col>
               <el-col :span="20">
                 <el-row v-for="second in first.children" :key="second.id" style="margin-bottom:5px">
                   <el-col :span="4">
-                    <el-tag closable type="sucess" @close='delRights(props.row,second.id),cnt=0'>{{second.authName}}</el-tag>
+                    <el-tag
+                      closable
+                      type="sucess"
+                      @close="delRights(props.row,second.id),cnt=0"
+                    >{{second.authName}}</el-tag>
                   </el-col>
                   <el-col :span="20">
-                    <el-tag closable type="warning" @close='delRights(props.row,third.id),cnt=0' v-for="third in second.children" :key='third.id' style="margin-right:5px">{{third.authName}}</el-tag>
+                    <el-tag
+                      closable
+                      type="warning"
+                      @close="delRights(props.row,third.id),cnt=0"
+                      v-for="third in second.children"
+                      :key="third.id"
+                      style="margin-right:5px"
+                    >{{third.authName}}</el-tag>
                   </el-col>
                 </el-row>
               </el-col>
@@ -51,7 +66,7 @@
             size="mini"
             type="warning"
             plain
-            @click="grantRoleRigths(scope.row)"
+            @click="showGrantDialog(scope.row)"
             icon="el-icon-check"
           ></el-button>
           <el-button
@@ -64,6 +79,21 @@
         </template>
       </el-table-column>
     </el-table>
+    <!-- 添加授权角色的对话框 -->
+    <el-dialog title="授权角色" :visible.sync="grantRightdialogFormVisible">
+      <el-tree
+        :data="rightsList"
+        show-checkbox
+        node-key="id"
+        :default-expand-all= true
+        :default-checked-keys="checkedArr"
+        :props="defaultProps"
+      ></el-tree>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="grantRightdialogFormVisible = false">取 消</el-button>
+        <el-button type="primary">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -73,14 +103,14 @@ export default {
   data () {
     return {
       rolesList: [],
-      grantRoleRightdialogFormVisible: false,
+      cnt: 0,
+      grantRightdialogFormVisible: false,
       rightsList: [],
       checkedArr: [],
       defaultProps: {
         label: 'authName',
         children: 'children'
-      },
-      cnt: 0
+      }
     }
   },
   methods: {
@@ -90,6 +120,7 @@ export default {
     handleDelete (index, row) {
       console.log(index, row)
     },
+    // 删除用户指定的权限
     async delRights (row, rightId) {
       // console.log(row, rightId)
       let res = await delRights(row.id, rightId)
@@ -115,9 +146,30 @@ export default {
           })
         }
       })
+    },
+    // 授权角色的数据默认展示
+    showGrantDialog (row) {
+      this.grantRightdialogFormVisible = true
+      // console.log(row)
+      // 树形控件具有缓存功能,每次点击需要重新加载数据---利用深拷贝
+      this.rightsList = [...this.rightsList]
+      // 让默认选中的checkedArr清空
+      this.checkedArr.length = 0
+      for (let e1 of row.children) {
+        if (e1.children.length > 0) {
+          for (let e2 of e1.children) {
+            if (e2.children.length > 0) {
+              for (let e3 of e2.children) {
+                this.checkedArr.push(e3.id)
+              }
+            }
+          }
+        }
+      }
     }
   },
   mounted () {
+    // 获取所有角色的数据
     getAllRoles()
       .then(res => {
         // console.log(res);
@@ -128,8 +180,9 @@ export default {
       .catch(() => {
         this.$message.error('服务器异常')
       })
+    // 获取所有权限的数据
     getAllRights('tree').then(res => {
-      // console.log(res)
+      console.log(res)
       if (res.data.meta.status === 200) {
         this.rightsList = res.data.data
       }
