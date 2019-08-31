@@ -45,7 +45,7 @@
             type="danger"
             plain
             icon="el-icon-delete"
-            @click="handleDelete(scope.$index, scope.row)"
+            @click="delGood(scope.row)"
           ></el-button>
         </template>
       </el-table-column>
@@ -63,7 +63,8 @@
   </div>
 </template>
 <script>
-import { getAllGoods } from '@/api/goods.js'
+import { getAllGoods, delGood } from '@/api/goods.js'
+import { async } from 'q'
 export default {
   data () {
     return {
@@ -106,6 +107,26 @@ export default {
     handleCurrentChange (val) {
       this.goodsObj.pagenum = val
       this.init()
+    },
+    // 删除商品
+    delGood (row) {
+      console.log(row)
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async () => {
+          let res = await delGood(row.goods_id)
+          // console.log(res)
+          if (res.data.meta.status === 200) {
+            this.$message.success('删除成功!')
+            this.init()
+          }
+        })
+        .catch(() => {
+          this.$message.info('已取消删除')
+        })
     }
   },
   mounted () {

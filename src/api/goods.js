@@ -7,3 +7,11 @@ export const getAllGoods = (params) => {
     params
   })
 }
+
+// 删除商品
+export const delGood = (id) => {
+  return axios({
+    url: `goods/${id}`,
+    method: 'delete'
+  })
+}
