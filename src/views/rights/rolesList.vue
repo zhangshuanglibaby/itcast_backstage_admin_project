@@ -59,7 +59,7 @@
             size="mini"
             type="primary"
             plain
-            @click="handleEdit(scope.$index, scope.row)"
+            @click="showEditRoleDialog(scope.row)"
             icon="el-icon-edit"
           ></el-button>
           <el-button
@@ -110,6 +110,21 @@
         <el-button type="primary" @click="addRole">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 编辑角色对话框 -->
+    <el-dialog title="编辑角色" :visible.sync="editRoleDialogFormVisible">
+      <el-form :model="editRoleForm" :label-width="'80px'" :rules="rules" ref='editRoleForm'>
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="editRoleForm.roleName" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop="roleDesc">
+          <el-input v-model="editRoleForm.roleDesc" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editRoleDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editRole">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -118,7 +133,8 @@ import {
   delRights,
   editRoleRights,
   addRole,
-  delRole
+  delRole,
+  editRole
 } from '@/api/roles.js'
 import { getAllRights } from '@/api/rights.js'
 export default {
@@ -146,13 +162,16 @@ export default {
         roleDesc: [
           { required: true, message: '请输入角色描述', trigger: 'blur' }
         ]
-      }
+      },
+      editRoleForm: {
+        id: '',
+        roleName: '',
+        roleDesc: ''
+      },
+      editRoleDialogFormVisible: false
     }
   },
   methods: {
-    handleEdit (index, row) {
-      console.log(index, row)
-    },
     // 获取所有角色列表数据
     init () {
       getAllRoles()
@@ -279,18 +298,47 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(async () => {
-        let res = await delRole(row.id)
-        console.log(res)
-        if (res.data.meta.status === 200) {
-          this.$message.success('删除成功!')
-          // 刷新
-          this.init()
+      })
+        .then(async () => {
+          let res = await delRole(row.id)
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.$message.success('删除成功!')
+            // 刷新
+            this.init()
+          }
+        })
+        .catch(() => {
+          this.$message.into('已取消删除')
+        })
+    },
+    // 编辑角色的默认数据展示
+    showEditRoleDialog (row) {
+      // console.log(row)
+      this.editRoleDialogFormVisible = true
+      this.editRoleForm.roleName = row.roleName
+      this.editRoleForm.roleDesc = row.roleDesc
+      this.editRoleForm.id = row.id
+    },
+    // 编辑提交角色
+    editRole () {
+      this.$refs.editRoleForm.validate(async (valid) => {
+        if (valid) {
+          let res = await editRole(this.editRoleForm)
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.$message.success('编辑角色成功')
+            this.editRoleDialogFormVisible = false
+            this.init()
+          } else {
+            this.$message.error(res.data.meta.msg)
+          }
+        } else {
+          this.$message.error('请将必填的信息完善')
         }
-      }).catch(() => {
-        this.$message.into('已取消删除')
       })
     }
+
   },
   mounted () {
     // 获取所有角色的数据

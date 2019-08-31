@@ -40,3 +40,12 @@ export const delRole = (id) => {
     method: 'delete'
   })
 }
+
+// 编辑提交角色
+export const editRole = (data) => {
+  return axios({
+    url: `roles/${data.id}`,
+    method: 'put',
+    data
+  })
+}
