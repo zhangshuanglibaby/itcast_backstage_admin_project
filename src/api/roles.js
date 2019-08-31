@@ -23,3 +23,12 @@ export const editRoleRights = (roleId, rids) => {
     data: { rids }
   })
 }
+
+// 添加角色
+export const addRole = (data) => {
+  return axios({
+    url: 'roles',
+    method: 'post',
+    data
+  })
+}

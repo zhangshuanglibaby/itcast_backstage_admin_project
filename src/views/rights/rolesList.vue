@@ -10,7 +10,7 @@
       <el-breadcrumb-item :to="{name:'rolesList'}">角色列表</el-breadcrumb-item>
     </el-breadcrumb>
     <!-- 添加按钮 -->
-    <el-button type="success" plain>添加角色</el-button>
+    <el-button type="success" plain @click="addRoledialogFormVisible=true">添加角色</el-button>
     <!-- 表格 -->
     <el-table :data="rolesList" border style="width: 100%">
       <el-table-column type="expand">
@@ -79,7 +79,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <!-- 添加授权角色的对话框 -->
+    <!-- 授权角色的对话框 -->
     <el-dialog title="授权角色" :visible.sync="grantRightdialogFormVisible">
       <el-tree
         :data="rightsList"
@@ -95,11 +95,27 @@
         <el-button type="primary" @click="editRoleRights(roleId)">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 添加角色的对话框 -->
+    <el-dialog title="添加角色" :visible.sync="addRoledialogFormVisible">
+  <el-form :model="addRoleform" :label-width="'80px'" :rules="rules" ref='addRoleform'>
+    <el-form-item label="角色名称" prop="roleName">
+      <el-input v-model="addRoleform.roleName" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="角色描述" prop="roleDesc">
+      <el-input v-model="addRoleform.roleDesc" autocomplete="off"></el-input>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="addRoledialogFormVisible = false">取 消</el-button>
+    <el-button type="primary" @click="addRole">确 定</el-button>
+  </div>
+</el-dialog>
   </div>
 </template>
 <script>
-import { getAllRoles, delRights, editRoleRights } from '@/api/roles.js'
+import { getAllRoles, delRights, editRoleRights, addRole } from '@/api/roles.js'
 import { getAllRights } from '@/api/rights.js'
+import { async } from 'q'
 export default {
   data () {
     return {
@@ -112,7 +128,16 @@ export default {
         label: 'authName',
         children: 'children'
       },
-      roleId: ''
+      roleId: '',
+      addRoleform: {
+        roleName: '',
+        roleDesc: ''
+      },
+      addRoledialogFormVisible: false,
+      rules: {
+        roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
+        roleDesc: [{ required: true, message: '请输入角色描述', trigger: 'blur' }]
+      }
     }
   },
   methods: {
@@ -217,6 +242,26 @@ export default {
       } else {
         this.$message.error(res.data.meta.msg)
       }
+    },
+    // 添加角色
+    addRole () {
+      // 要进行表单的二次验证
+      this.$refs.addRoleform.validate(async (valid) => {
+        if (valid) {
+          let res = await addRole(this.addRoleform)
+          console.log(res)
+          if (res.data.meta.status === 201) {
+            this.$message.success(res.data.meta.msg)
+            this.addRoledialogFormVisible = false
+            // 刷新
+            this.init()
+            // 清空表单
+            this.$refs.addRoleform.resetFields()
+          }
+        } else {
+          this.$message.error('请将必填的信息完善')
+        }
+      })
     }
   },
   mounted () {
