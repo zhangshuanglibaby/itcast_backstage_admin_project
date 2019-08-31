@@ -326,6 +326,8 @@ export default {
     // console.log(res)
     if (res.data.meta.status === 200) {
       this.roleList = res.data.data
+    } else {
+      this.$message.error(res.data.meta.msg)
     }
   }
 }

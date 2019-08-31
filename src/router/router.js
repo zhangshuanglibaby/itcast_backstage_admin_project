@@ -11,8 +11,8 @@ import login from '@/views/login.vue'
 import home from '@/views/home.vue'
 import welcome from '@/views/welcome.vue'
 import users from '@/views/users/users.vue'
-import rightsList from '@/views/rights/rightsList.vue'
-import rolesList from '@/views/rights/rolesList.vue'
+import rights from '@/views/rights/rightsList.vue'
+import roles from '@/views/rights/rolesList.vue'
 
 // 使用use,让vue使用vue-router进行对路由的管理
 Vue.use(VueRouter)
@@ -52,13 +52,13 @@ export default new VueRouter({
           component: users
         },
         {
-          name: 'rightsList',
-          path: 'rightsList',
-          component: rightsList
+          name: 'rights',
+          path: 'rights',
+          component: rights
         }, {
-          name: 'rolesList',
-          path: 'rolesList',
-          component: rolesList
+          name: 'roles',
+          path: 'roles',
+          component: roles
         }
       ]
     }
