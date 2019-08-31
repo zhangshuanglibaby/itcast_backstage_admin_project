@@ -88,16 +88,17 @@
         :default-expand-all= true
         :default-checked-keys="checkedArr"
         :props="defaultProps"
+        ref='tree'
       ></el-tree>
       <div slot="footer" class="dialog-footer">
         <el-button @click="grantRightdialogFormVisible = false">取 消</el-button>
-        <el-button type="primary">确 定</el-button>
+        <el-button type="primary" @click="editRoleRights(roleId)">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 <script>
-import { getAllRoles, delRights } from '@/api/roles.js'
+import { getAllRoles, delRights, editRoleRights } from '@/api/roles.js'
 import { getAllRights } from '@/api/rights.js'
 export default {
   data () {
@@ -110,7 +111,8 @@ export default {
       defaultProps: {
         label: 'authName',
         children: 'children'
-      }
+      },
+      roleId: ''
     }
   },
   methods: {
@@ -119,6 +121,19 @@ export default {
     },
     handleDelete (index, row) {
       console.log(index, row)
+    },
+    // 获取所有角色列表数据
+    init () {
+      getAllRoles()
+        .then(res => {
+        // console.log(res);
+          if (res.data.meta.status === 200) {
+            this.rolesList = res.data.data
+          }
+        })
+        .catch(() => {
+          this.$message.error('服务器异常')
+        })
     },
     // 删除用户指定的权限
     async delRights (row, rightId) {
@@ -151,6 +166,7 @@ export default {
     showGrantDialog (row) {
       this.grantRightdialogFormVisible = true
       // console.log(row)
+      this.roleId = row.id
       // 树形控件具有缓存功能,每次点击需要重新加载数据---利用深拷贝
       this.rightsList = [...this.rightsList]
       // 让默认选中的checkedArr清空
@@ -166,23 +182,49 @@ export default {
           }
         }
       }
+    },
+    // 编辑提交角色
+    async editRoleRights (roleId) {
+      // console.log(this.$refs.tree.getCheckedNodes())
+      // let temp = this.$refs.tree.getCheckedNodes()
+      // let rids = []
+      // temp.forEach(e => {
+      //   rids.push(e.id + ',' + e.pid)
+      // })
+      // rids = rids.join(',').split(',')
+      // // 去重
+      // rids = [...new Set(rids)].join(',')
+      // let res = await editRoleRights(roleId, rids)
+      // // console.log(roleId)
+      // // console.log(rids)
+      // // console.log(res)
+      // if (res.data.meta.status === 200) {
+      //   this.grantRightdialogFormVisible = false
+      //   this.$message.success(res.data.meta.msg)
+      //   // 刷新
+      //   this.init()
+      // }
+      /** -----------------------第二种方法---------------------------------- */
+      // console.log(this.$refs.tree.getHalfCheckedKeys())
+      // console.log(this.$refs.tree.getCheckedKeys())
+      let arr = [...this.$refs.tree.getHalfCheckedKeys(), ...this.$refs.tree.getCheckedKeys()]
+      let res = await editRoleRights(roleId, arr.join(','))
+      // console.log(res)
+      if (res.data.meta.status === 200) {
+        this.$message.success(res.data.meta.msg)
+        this.grantRightdialogFormVisible = false
+        this.init()
+      } else {
+        this.$message.error(res.data.meta.msg)
+      }
     }
   },
   mounted () {
     // 获取所有角色的数据
-    getAllRoles()
-      .then(res => {
-        // console.log(res);
-        if (res.data.meta.status === 200) {
-          this.rolesList = res.data.data
-        }
-      })
-      .catch(() => {
-        this.$message.error('服务器异常')
-      })
+    this.init()
     // 获取所有权限的数据
     getAllRights('tree').then(res => {
-      console.log(res)
+      // console.log(res)
       if (res.data.meta.status === 200) {
         this.rightsList = res.data.data
       }

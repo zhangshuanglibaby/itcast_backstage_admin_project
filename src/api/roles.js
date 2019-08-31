@@ -14,3 +14,12 @@ export const delRights = (roleId, rightId) => {
     method: 'delete'
   })
 }
+
+// 编辑提交角色
+export const editRoleRights = (roleId, rids) => {
+  return axios({
+    url: `roles/${roleId}/rights`,
+    method: 'post',
+    data: { rids }
+  })
+}
