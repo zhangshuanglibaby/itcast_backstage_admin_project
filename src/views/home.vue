@@ -46,7 +46,7 @@ export default {
   mounted () {
     getLeftMenus()
       .then(res => {
-        console.log(res)
+        // console.log(res)
         if (res.data.meta.status === 200) {
           this.menusList = res.data.data
         }

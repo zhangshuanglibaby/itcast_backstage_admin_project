@@ -13,6 +13,8 @@ import welcome from '@/views/welcome.vue'
 import users from '@/views/users/users.vue'
 import rights from '@/views/rights/rightsList.vue'
 import roles from '@/views/rights/rolesList.vue'
+import goods from '@/views/goods/goods.vue'
+import add from '@/views/goods/add.vue'
 
 // 使用use,让vue使用vue-router进行对路由的管理
 Vue.use(VueRouter)
@@ -59,6 +61,16 @@ export default new VueRouter({
           name: 'roles',
           path: 'roles',
           component: roles
+        },
+        {
+          name: 'goods',
+          path: 'goods',
+          component: goods
+        },
+        {
+          name: 'add',
+          path: 'add',
+          component: add
         }
       ]
     }
