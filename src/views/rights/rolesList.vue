@@ -73,7 +73,7 @@
             size="mini"
             type="danger"
             plain
-            @click="handleDelete(scope.$index, scope.row)"
+            @click="delRole(scope.row)"
             icon="el-icon-delete"
           ></el-button>
         </template>
@@ -85,10 +85,10 @@
         :data="rightsList"
         show-checkbox
         node-key="id"
-        :default-expand-all= true
+        :default-expand-all="true"
         :default-checked-keys="checkedArr"
         :props="defaultProps"
-        ref='tree'
+        ref="tree"
       ></el-tree>
       <div slot="footer" class="dialog-footer">
         <el-button @click="grantRightdialogFormVisible = false">取 消</el-button>
@@ -97,25 +97,30 @@
     </el-dialog>
     <!-- 添加角色的对话框 -->
     <el-dialog title="添加角色" :visible.sync="addRoledialogFormVisible">
-  <el-form :model="addRoleform" :label-width="'80px'" :rules="rules" ref='addRoleform'>
-    <el-form-item label="角色名称" prop="roleName">
-      <el-input v-model="addRoleform.roleName" autocomplete="off"></el-input>
-    </el-form-item>
-    <el-form-item label="角色描述" prop="roleDesc">
-      <el-input v-model="addRoleform.roleDesc" autocomplete="off"></el-input>
-    </el-form-item>
-  </el-form>
-  <div slot="footer" class="dialog-footer">
-    <el-button @click="addRoledialogFormVisible = false">取 消</el-button>
-    <el-button type="primary" @click="addRole">确 定</el-button>
-  </div>
-</el-dialog>
+      <el-form :model="addRoleform" :label-width="'80px'" :rules="rules" ref="addRoleform">
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="addRoleform.roleName" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop="roleDesc">
+          <el-input v-model="addRoleform.roleDesc" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addRoledialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addRole">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getAllRoles, delRights, editRoleRights, addRole } from '@/api/roles.js'
+import {
+  getAllRoles,
+  delRights,
+  editRoleRights,
+  addRole,
+  delRole
+} from '@/api/roles.js'
 import { getAllRights } from '@/api/rights.js'
-import { async } from 'q'
 export default {
   data () {
     return {
@@ -135,8 +140,12 @@ export default {
       },
       addRoledialogFormVisible: false,
       rules: {
-        roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
-        roleDesc: [{ required: true, message: '请输入角色描述', trigger: 'blur' }]
+        roleName: [
+          { required: true, message: '请输入角色名称', trigger: 'blur' }
+        ],
+        roleDesc: [
+          { required: true, message: '请输入角色描述', trigger: 'blur' }
+        ]
       }
     }
   },
@@ -144,14 +153,11 @@ export default {
     handleEdit (index, row) {
       console.log(index, row)
     },
-    handleDelete (index, row) {
-      console.log(index, row)
-    },
     // 获取所有角色列表数据
     init () {
       getAllRoles()
         .then(res => {
-        // console.log(res);
+          // console.log(res);
           if (res.data.meta.status === 200) {
             this.rolesList = res.data.data
           }
@@ -232,7 +238,10 @@ export default {
       /** -----------------------第二种方法---------------------------------- */
       // console.log(this.$refs.tree.getHalfCheckedKeys())
       // console.log(this.$refs.tree.getCheckedKeys())
-      let arr = [...this.$refs.tree.getHalfCheckedKeys(), ...this.$refs.tree.getCheckedKeys()]
+      let arr = [
+        ...this.$refs.tree.getHalfCheckedKeys(),
+        ...this.$refs.tree.getCheckedKeys()
+      ]
       let res = await editRoleRights(roleId, arr.join(','))
       // console.log(res)
       if (res.data.meta.status === 200) {
@@ -246,7 +255,7 @@ export default {
     // 添加角色
     addRole () {
       // 要进行表单的二次验证
-      this.$refs.addRoleform.validate(async (valid) => {
+      this.$refs.addRoleform.validate(async valid => {
         if (valid) {
           let res = await addRole(this.addRoleform)
           console.log(res)
@@ -261,6 +270,25 @@ export default {
         } else {
           this.$message.error('请将必填的信息完善')
         }
+      })
+    },
+    // 删除角色
+    delRole (row) {
+      // console.log(row)
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        let res = await delRole(row.id)
+        console.log(res)
+        if (res.data.meta.status === 200) {
+          this.$message.success('删除成功!')
+          // 刷新
+          this.init()
+        }
+      }).catch(() => {
+        this.$message.into('已取消删除')
       })
     }
   },
